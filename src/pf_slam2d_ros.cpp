@@ -73,7 +73,6 @@ lama::PFSlam2DROS::PFSlam2DROS()
     pnh_.param("a_thresh",   options.rot_thresh,      0.25);
     pnh_.param("l2_max",     options.l2_max,           0.5);
     pnh_.param("truncate",   options.truncated_ray,    0.0);
-    pnh_.param("truncate_range", options.truncated_range, 0.0);
     pnh_.param("resolution", options.resolution,      0.05);
     pnh_.param("strategy", options.strategy, std::string("gn"));
     pnh_.param("use_compression",       options.use_compression, false);
@@ -103,7 +102,7 @@ lama::PFSlam2DROS::PFSlam2DROS()
 
     // Syncronized LaserScan messages with odometry transforms. This ensures that an odometry transformation
     // exists when the handler of a LaserScan message is called.
-    laser_scan_sub_    = new message_filters::Subscriber<sensor_msgs::LaserScan>(nh_, scan_topic_, 100, ros::TransportHints().tcpNoDelay());
+    laser_scan_sub_    = new message_filters::Subscriber<sensor_msgs::LaserScan>(nh_, scan_topic_, 100);
     laser_scan_filter_ = new tf::MessageFilter<sensor_msgs::LaserScan>(*laser_scan_sub_, *tf_, odom_frame_id_, 100);
     laser_scan_filter_->registerCallback(boost::bind(&PFSlam2DROS::onLaserScan, this, _1));
 
@@ -339,7 +338,9 @@ void lama::PFSlam2DROS::publishMaps()
 
 bool lama::PFSlam2DROS::OccupancyMsgFromOccupancyMap(nav_msgs::OccupancyGrid& msg)
 {
-    const FrequencyOccupancyMap* map = slam2d_->getOccupancyMap();
+    //const FrequencyOccupancyMap* map = slam2d_->getOccupancyMap();
+    const ProbabilisticOccupancyMap* map = slam2d_->getOccupancyMap();
+
     if (map == 0)
         return false;
 
@@ -431,7 +432,9 @@ bool lama::PFSlam2DROS::DistanceMsgFromOccupancyMap(nav_msgs::OccupancyGrid& msg
 
 bool lama::PFSlam2DROS::PatchMsgFromOccupancyMap(nav_msgs::OccupancyGrid& msg)
 {
-    const FrequencyOccupancyMap* map = slam2d_->getOccupancyMap();
+    //const FrequencyOccupancyMap* map = slam2d_->getOccupancyMap();
+    const ProbabilisticOccupancyMap* map = slam2d_->getOccupancyMap();
+
     if (map == 0)
         return false;
 
